@@ -6,6 +6,7 @@
 /* eslint-disable testing-library/render-result-naming-convention */
 
 import { renderToString } from 'react-dom/server'
+import { Suspense } from 'react'
 import useSWR from 'swr'
 import useSWRImmutable from 'swr/immutable'
 import { IS_SERVER } from 'swr/_internal'
@@ -39,6 +40,21 @@ describe('useSWR', () => {
     }
 
     const html = renderToString(<Page />)
+    expect(html).toContain('empty')
+  })
+
+  it('should not suspend with a falsy key in suspense mode on the server', () => {
+    function Page() {
+      const { data } = useSWR(null, () => 'SWR', { suspense: true })
+      return <p>{data || 'empty'}</p>
+    }
+
+    const html = renderToString(
+      <Suspense fallback={<p>fallback</p>}>
+        <Page />
+      </Suspense>
+    )
+
     expect(html).toContain('empty')
   })
 })
